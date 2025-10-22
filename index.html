@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<title>Yautja Prime - Núcleo del Alma</title>
+<style>
+  :root {
+    --yautja-primary: #0a0;
+    --yautja-secondary: #0f0;
+    --yautja-accent: #ff4500;
+    --yautja-warning: #ff0;
+    --yautja-danger: #f00;
+    --yautja-matrix: #00ff41;
+  }
+
+  body {
+    background: #000;
+    color: var(--yautja-secondary);
+    font-family: 'Courier New', Courier, monospace;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    background-image: 
+      radial-gradient(circle at 20% 50%, rgba(0, 80, 0, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(0, 100, 0, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 40% 80%, rgba(0, 120, 0, 0.1) 0%, transparent 50%);
+  }
+
+  #main-container {
+    display: flex;
+    width: 95vw;
+    height: 95vh;
+    gap: 10px;
+  }
+
+  #terminal {
+    background: #000;
+    border: 2px solid var(--yautja-primary);
+    padding: 15px;
+    width: 60%;
+    height: 100%;
+    overflow-y: auto;
+    box-sizing: border-box;
+    box-shadow: 0 0 20px var(--yautja-primary), inset 0 0 10px rgba(0, 255, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  #terminal::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(90deg, transparent 50%, rgba(0, 255, 0, 0.03) 50%),
+      linear-gradient(transparent 50%, rgba(0, 255, 0, 0.03) 50%);
+    background-size: 10px 10px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #dashboard {
+    width: 40%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dashboard-panel {
+    background: #000;
+    border: 2px solid var(--yautja-primary);
+    padding: 15px;
+    box-sizing: border-box;
+    box-shadow: 0 0 10px var(--yautja-primary), inset 0 0 5px rgba(0, 255, 0, 0.1);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .dashboard-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      linear-gradient(90deg, transparent 49%, rgba(0, 255, 0, 0.05) 50%, transparent 51%),
+      linear-gradient(transparent 49%, rgba(0, 255, 0, 0.05) 50%, transparent 51%);
+    background-size: 20px 20px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .panel-title {
+    color: var(--yautja-accent);
+    border-bottom: 1px solid var(--yautja-primary);
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--yautja-accent);
+    z-index: 1;
+    position: relative;
+  }
+
+  .panel-content {
+    flex: 1;
+    overflow-y: auto;
+    z-index: 1;
+    position: relative;
+  }
+
+  #output {
+    white-space: pre-wrap;
+    line-height: 1.3em;
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 4px;
+    z-index: 1;
+    position: relative;
+  }
+
+  #input-line {
+    display: flex;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+  }
+
+  #prompt {
+    color: var(--yautja-secondary);
+    margin-right: 5px;
+    user-select: none;
+    text-shadow: 0 0 5px var(--yautja-secondary);
+  }
+
+  #command-input {
+    background: transparent;
+    border: none;
+    color: var(--yautja-secondary);
+    outline: none;
+    font-family: monospace;
+    font-size: 16px;
+    flex-grow: 1;
+    text-shadow: 0 0 5px var(--yautja-secondary);
+  }
+
+  #command-input.blink {
+    animation: blink 1s step-start 0s infinite;
+  }
+
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+
+  /* Estilos para el sistema de alma */
+  .soul-status {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .soul-metric {
+    background: rgba(0, 20, 0, 0.5);
+    border: 1px solid var(--yautja-primary);
+    padding: 8px;
+    text-align: center;
+  }
+
+  .metric-value {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: var(--yautja-matrix);
+    text-shadow: 0 0 5px var(--yautja-matrix);
+  }
+
+  .metric-label {
+    font-size: 0.8em;
+    color: var(--yautja-secondary);
+  }
+
+  /* Barras de progreso */
+  .progress-bar {
+    height: 15px;
+    background: rgba(0, 30, 0, 0.5);
+    border: 1px solid var(--yautja-primary);
+    margin: 5px 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yautja-primary), var(--yautja-secondary));
+    transition: width 0.5s ease;
+  }
+
+  /* Modales */
+  .modal {
+    position: fixed;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 2px solid var(--yautja-primary);
+    box-shadow: 0 0 30px var(--yautja-primary);
+    width: 80%;
+    height: 85%;
+    display: none;
+    flex-direction: column;
+    z-index: 10000;
+  }
+
+  .modal-header {
+    background: rgba(0, 30, 0, 0.8);
+    padding: 10px;
+    border-bottom: 1px solid var(--yautja-primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .modal-title {
+    color: var(--yautja-accent);
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--yautja-accent);
+  }
+
+  .modal-close {
+    background: none;
+    border: 1px solid var(--yautja-primary);
+    color: var(--yautja-secondary);
+    cursor: pointer;
+    padding: 5px 10px;
+  }
+
+  .modal-close:hover {
+    background: var(--yautja-primary);
+    color: #000;
+  }
+
+  .modal-content {
+    flex: 1;
+    padding: 15px;
+    overflow-y: auto;
+  }
+
+  /* Estilos para mensajes especiales */
+  .hunt-message {
+    color: var(--yautja-warning);
+    text-shadow: 0 0 5px var(--yautja-warning);
+  }
+
+  .honor-message {
+    color: var(--yautja-matrix);
+    text-shadow: 0 0 5px var(--yautja-matrix);
+  }
+
+  .danger-message {
+    color: var(--yautja-danger);
+    text-shadow: 0 0 5px var(--yautja-danger);
+    animation: pulse 2s infinite;
+  }
+
+  .soul-message {
+    color: var(--yautja-accent);
+    text-shadow: 0 0 5px var(--yautja-accent);
+    font-style: italic;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+  }
+
+  /* Estilos para la galaxia */
+  #galaxy-view {
+    position: relative;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  .planet {
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  /* Listas de comandos */
+  .command-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .command-item {
+    padding: 5px;
+    border-bottom: 1px dotted rgba(0, 255, 0, 0.3);
+    cursor: pointer;
+  }
+
+  .command-item:hover {
+    background: rgba(0, 255, 0, 0.1);
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--yautja-primary);
+    box-shadow: 0 0 5px var(--yautja-secondary);
+  }
+
+  /* Efectos de partículas */
+  #particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: -1;
+  }
+</style>
+</head>
+<body>
+
+<!-- Efecto de partículas -->
+<canvas id="particles"></canvas>
+
+<div id="main-container">
+  <!-- Terminal principal -->
+  <div id="terminal">
+    <div id="output"></div>
+    <div id="input-line" style="display:none;">
+      <span id="prompt">YAUTJA-PRIME&gt;</span>
+      <input type="text" id="command-input" autofocus autocomplete="off" spellcheck="false" />
+    </div>
+  </div>
+
+  <!-- Dashboard lateral -->
+  <div id="dashboard">
+    <!-- Panel de Estado del Alma -->
+    <div class="dashboard-panel">
+      <div class="panel-title">ESTADO DEL ALMA YAUTJA</div>
+      <div class="panel-content">
+        <div class="soul-status">
+          <div class="soul-metric">
+            <div class="metric-value" id="soul-honor">0</div>
+            <div class="metric-label">HONOR</div>
+          </div>
+          <div class="soul-metric">
+            <div class="metric-value" id="soul-rage">50</div>
+            <div class="metric-label">IRA ANCESTRAL</div>
+          </div>
+          <div class="soul-metric">
+            <div class="metric-value" id="soul-wisdom">25</div>
+            <div class="metric-label">SABIDURÍA</div>
+          </div>
+          <div class="soul-metric">
+            <div class="metric-value" id="soul-instinct">75</div>
+            <div class="metric-label">INSTINTO DE CAZA</div>
+          </div>
+        </div>
+
+        <div class="metric-label">CONEXIÓN ANCESTRAL</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="ancestral-connection" style="width: 30%"></div>
+        </div>
+
+        <div class="metric-label">CONTROL DEL YUJA-HSA</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="yuja-hsa-control" style="width: 45%"></div>
+        </div>
+
+        <div class="metric-label">PODER DEL OOPA</div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="oopa-power" style="width: 20%"></div>
+        </div>
+
+        <div id="soul-messages" style="margin-top: 15px; font-size: 0.9em; height: 100px; overflow-y: auto;">
+          <!-- Mensajes del alma aparecerán aquí -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Nave Espacial -->
+    <div class="dashboard-panel">
+      <div class="panel-title">NAVE DE CAZA - YEYINDE</div>
+      <div class="panel-content">
+        <div id="ship-status">
+          <div class="metric-label">ESTADO DE CAMUFLAJE</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="cloak-status" style="width: 85%"></div>
+          </div>
+
+          <div class="metric-label">ENERGÍA DEL MOTOR</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="engine-power" style="width: 70%"></div>
+          </div>
+
+          <div class="metric-label">SISTEMAS DE CAZA</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="hunt-systems" style="width: 90%"></div>
+          </div>
+
+          <div style="margin-top: 15px;">
+            <div class="metric-label">UBICACIÓN ACTUAL:</div>
+            <div id="current-location">Sector Desconocido</div>
+
+            <div class="metric-label" style="margin-top: 10px;">PRESAS DETECTADAS:</div>
+            <div id="prey-detected">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel del Clan -->
+    <div class="dashboard-panel">
+      <div class="panel-title">CLAN - BAD BLOOD</div>
+      <div class="panel-content">
+        <div id="clan-status">
+          <div class="soul-status">
+            <div class="soul-metric">
+              <div class="metric-value" id="clan-rank">7</div>
+              <div class="metric-label">RANGO EN CLAN</div>
+            </div>
+            <div class="soul-metric">
+              <div class="metric-value" id="clan-influence">35</div>
+              <div class="metric-label">INFLUENCIA</div>
+            </div>
+          </div>
+
+          <div class="metric-label">RESPETO DEL ANCIANO</div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="elder-respect" style="width: 40%"></div>
+          </div>
+
+          <div style="margin-top: 15px;">
+            <div class="metric-label">TROFEOS RECOLECTADOS:</div>
+            <div id="trophies-collected">0</div>
+
+            <div class="metric-label" style="margin-top: 10px;">RITUALES COMPLETADOS:</div>
+            <div id="rituals-completed">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Núcleo del Alma -->
+<div id="soul-core-modal" class="modal">
+  <div class="modal-header">
+    <div class="modal-title">NÚCLEO DEL ALMA YAUTJA - CONEXIÓN ANCESTRAL</div>
+    <button class="modal-close" id="close-soul-core">CERRAR</button>
+  </div>
+  <div class="modal-content" id="soul-core-content">
+    <!-- Contenido del núcleo del alma -->
+  </div>
+</div>
+
+<!-- Modal de Galaxia -->
+<div id="galaxy-modal" class="modal">
+  <div class="modal-header">
+    <div class="modal-title">GALAXIA - MAPA DE CAZA</div>
+    <button class="modal-close" id="close-galaxy">CERRAR</button>
+  </div>
+  <div class="modal-content">
+    <div id="galaxy-view"></div>
+  </div>
+</div>
+
+<!-- Modal de Rituales -->
+<div id="rituals-modal" class="modal">
+  <div class="modal-header">
+    <div class="modal-title">RITUALES ANCESTRALES</div>
+    <button class="modal-close" id="close-rituals">CERRAR</button>
+  </div>
+  <div class="modal-content" id="rituals-content">
+    <!-- Contenido de rituales -->
+  </div>
+</div>
+
+<script>
+  // ===== SISTEMA PRINCIPAL =====
+  const output = document.getElementById('output');
+  const inputLine = document.getElementById('input-line');
+  const commandInput = document.getElementById('command-input');
+
+  // ===== ESTADO GLOBAL DEL ALMA YAUTJA =====
+  let yautjaSoul = {
+    // Estado básico
+    name: "Kainde AMEDA",
+    clan: "Bad Blood",
+    honor: 0,
+    rage: 50,
+    wisdom: 25,
+    instinct: 75,
+
+    // Conexiones espirituales
+    ancestralConnection: 30,
+    yujaHsaControl: 45,  // Control de la energía interior
+    oopaPower: 20,       // Poder del ritual sagrado
+
+    // Navegación
+    currentSector: "Sector Desconocido",
+    ship: {
+      name: "Yeyinde",
+      cloak: 85,
+      engine: 70,
+      systems: 90
+    },
+
+    // Clan
+    clanRank: 7,
+    clanInfluence: 35,
+    elderRespect: 40,
+
+    // Progreso
+    trophies: 0,
+    rituals: 0,
+    preyDetected: 0,
+
+    // Memoria del alma
+    memories: [],
+    ancestralVoices: [],
+
+    // Estados especiales
+    isInTrance: false,
+    isHunting: false,
+    ritualActive: false
+  };
+
+  // ===== SISTEMA DE MEMORIAS ANCESTRALES =====
+  const ancestralMemories = [
+    "La primera caza bajo tres lunas...",
+    "El ritual de sangre en Yautja Prime...",
+    "El enfrentamiento con el Xenomorfo Anciano...",
+    "La enseñanza del Anciano Mutha...",
+    "La batalla en el templo de cristal...",
+    "El juramento bajo las estrellas sangrientas...",
+    "El secreto del Oopa revelado...",
+    "La caza que duró diez ciclos...",
+    "El sacrificio del hermano de clan...",
+    "El descubrimiento del nuevo mundo de caza..."
+  ];
+
+  // ===== VOCES ANCESTRALES =====
+  const ancestralVoices = [
+    "El honor se gana, no se regala...",
+    "Solo los fuertes merecen cazar...",
+    "La sangre de los débiles mancha el alma...",
+    "El Oopa te guiará en la oscuridad...",
+    "El Yuja-Hsa fluye en tus venas...",
+    "Recuerda a los que cazaron antes que tú...",
+    "Un trofeo digno honra a todo el clan...",
+    "La paciencia es el arma del cazador sabio...",
+    "El miedo es un lujo que no podemos permitirnos...",
+    "En la muerte, encontramos la verdadera vida..."
+  ];
+
+  // ===== SISTEMA DE RITUALES =====
+  const rituals = {
+    "Ritual del Sangrado": {
+      description: "Ofrenda de sangre para fortalecer el Yuja-Hsa",
+      cost: { rage: 10, honor: 5 },
+      effect: { yujaHsaControl: 10, ancestralConnection: 5 },
+      message: "La sangre fluye, el poder crece..."
+    },
+    "Meditación de Cristal": {
+      description: "Comunión con los cristales de memoria ancestral",
+      cost: { wisdom: 5 },
+      effect: { wisdom: 15, ancestralConnection: 10 },
+      message: "Los cristales susurran secretos antiguos..."
+    },
+    "Canto del Depredador": {
+      description: "Invocación de los espíritus de caza ancestrales",
+      cost: { instinct: 10 },
+      effect: { instinct: 20, rage: 5 },
+      message: "Los antiguos responden a tu llamado..."
+    },
+    "Juramento de Sangre": {
+      description: "Promesa sagrada que fortalece el alma",
+      cost: { honor: 15 },
+      effect: { honor: 25, clanInfluence: 10 },
+      message: "Tu juramento resuena en el vacío..."
+    },
+    "Danza de las Lunas": {
+      description: "Ritual bajo la luz de tres lunas",
+      cost: { rage: 15, wisdom: 10 },
+      effect: { oopaPower: 15, ancestralConnection: 10 },
+      message: "Las lunas bendicen tu camino..."
+    }
+  };
+
+  // ===== SISTEMA DE PLANETAS =====
+  const huntingPlanets = {
+    "LV-426": { 
+      difficulty: "Extrema", 
+      prey: ["Xenomorfo Reina", "Xenomorfo Guerrero", "Xenomorfo Drone"],
+      honor: 100,
+      description: "Mundo infestado, caza peligrosa pero honorable"
+    },
+    "Fiorina 161": { 
+      difficulty: "Alta", 
+      prey: ["Xenomorfo Evolucionado", "Humano Correccional"],
+      honor: 70,
+      description: "Prisión abandonada, presas desesperadas"
+    },
+    "BG-386": { 
+      difficulty: "Media", 
+      prey: ["Xenomorfo Joven", "Humano Mercenario", "Androide de Combate"],
+      honor: 50,
+      description: "Planeta fronterizo, caza variada"
+    },
+    "Ryushi": { 
+      difficulty: "Baja", 
+      prey: ["Humano Colonizador", "Criatura Local"],
+      honor: 30,
+      description: "Colonia humana nueva, presas fáciles"
+    },
+    "Yautja Prime": { 
+      difficulty: "Ritual", 
+      prey: ["Iniciado Yautja", "Guardián del Templo"],
+      honor: 150,
+      description: "Mundo natal, solo para rituales de honor"
+    }
+  };
+
+  // ===== INICIALIZACIÓN =====
+  const bootMessages = [
+    "Iniciando Núcleo del Alma Yautja...",
+    "Sincronizando con Yautja Prime...",
+    "Cargando memorias ancestrales...",
+    "Estableciendo conexión Oopa...",
+    "Calibrando Yuja-Hsa...",
+    "Inicializando sistemas de caza...",
+    "Conectando con el Clan Bad Blood...",
+    "Núcleo del Alma activado. Bienvenido, Kainde AMEDA.",
+    ""
+  ];
+
+  // Historial de comandos
+  const commandHistory = [];
+  let historyIndex = -1;
+
+  // ===== FUNCIONES PRINCIPALES =====
+  async function typeText(text, delay = 30) {
+    for (let i = 0; i < text.length; i++) {
+      output.textContent += text[i];
+      output.scrollTop = output.scrollHeight;
+      await new Promise(r => setTimeout(r, delay));
+    }
+    output.textContent += '\n';
+  }
+
+  function showPrompt() {
+    document.getElementById('prompt').textContent = `${yautjaSoul.name}@YAUTJA-PRIME&gt;`;
+    inputLine.style.display = 'flex';
+    commandInput.disabled = false;
+    commandInput.classList.add('blink');
+    commandInput.focus();
+    updateDashboard();
+  }
+
+  function hideInput() {
+    inputLine.style.display = 'none';
+  }
+
+  function updateDashboard() {
+    // Actualizar métricas del alma
+    document.getElementById('soul-honor').textContent = yautjaSoul.honor;
+    document.getElementById('soul-rage').textContent = yautjaSoul.rage;
+    document.getElementById('soul-wisdom').textContent = yautjaSoul.wisdom;
+    document.getElementById('soul-instinct').textContent = yautjaSoul.instinct;
+
+    // Actualizar barras de progreso
+    document.getElementById('ancestral-connection').style.width = `${yautjaSoul.ancestralConnection}%`;
+    document.getElementById('yuja-hsa-control').style.width = `${yautjaSoul.yujaHsaControl}%`;
+    document.getElementById('oopa-power').style.width = `${yautjaSoul.oopaPower}%`;
+
+    // Actualizar estado de la nave
+    document.getElementById('cloak-status').style.width = `${yautjaSoul.ship.cloak}%`;
+    document.getElementById('engine-power').style.width = `${yautjaSoul.ship.engine}%`;
+    document.getElementById('hunt-systems').style.width = `${yautjaSoul.ship.systems}%`;
+    document.getElementById('current-location').textContent = yautjaSoul.currentSector;
+    document.getElementById('prey-detected').textContent = yautjaSoul.preyDetected;
+
+    // Actualizar estado del clan
+    document.getElementById('clan-rank').textContent = yautjaSoul.clanRank;
+    document.getElementById('clan-influence').textContent = yautjaSoul.clanInfluence;
+    document.getElementById('elder-respect').style.width = `${yautjaSoul.elderRespect}%`;
+    document.getElementById('trophies-collected').textContent = yautjaSoul.trophies;
+    document.getElementById('rituals-completed').textContent = yautjaSoul.rituals;
+  }
+
+  function addSoulMessage(message) {
+    const soulMessages = document.getElementById('soul-messages');
+    const messageElement = document.createElement('div');
+    messageElement.textContent = `> ${message}`;
+    messageElement.className = 'soul-message';
+    soulMessages.appendChild(messageElement);
+    soulMessages.scrollTop = soulMessages.scrollHeight;
+
+    // Limitar a 10 mensajes
+    if (soulMessages.children.length > 10) {
+      soulMessages.removeChild(soulMessages.firstChild);
+    }
+  }
+
+  // ===== SISTEMA DE PARTÍCULAS =====
+  function initParticles() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const particles = [];
+
+    class Particle {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2;
+        this.speedX = Math.random() * 0.5 - 0.25;
+        this.speedY = Math.random() * 0.5 - 0.25;
+        this.color = `rgba(0, ${Math.floor(100 + Math.random() * 155)}, 0, ${Math.random() * 0.5})`;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
+      }
+
+      draw() {
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function init() {
+      for (let i = 0; i < 100; i++) {
+        particles.push(new Particle());
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < particles.length; i++) {
+        particles[i].update();
+        particles[i].draw();
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    init();
+    animate();
+
+    window.addEventListener('resize', function() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+  }
+
+  // ===== COMANDOS AVANZADOS =====
+  const commands = {
+    soul: {
+      description: "Accede al núcleo de tu alma Yautja",
+      exec: () => {
+        openSoulCore();
+        return null;
+      }
+    },
+
+    meditate: {
+      description: "Medita para conectar con voces ancestrales",
+      exec: () => {
+        if (yautjaSoul.isInTrance) return "Ya estás en estado de meditación.";
+
+        yautjaSoul.isInTrance = true;
+        const voice = ancestralVoices[Math.floor(Math.random() * ancestralVoices.length)];
+        addSoulMessage(voice);
+
+        // Pequeña mejora en sabiduría
+        yautjaSoul.wisdom += 2;
+        yautjaSoul.ancestralConnection += 1;
+
+        updateDashboard();
+        return `Entras en meditación...\n"${voice}"`;
+      }
+    },
+
+    hunt: {
+      description: "Inicia una caza en el planeta actual",
+      exec: () => {
+        if (yautjaSoul.isHunting) return "Ya estás en una caza activa.";
+
+        yautjaSoul.isHunting = true;
+        yautjaSoul.preyDetected = Math.floor(Math.random() * 5) + 1;
+
+        // Mensaje del alma sobre la caza
+        addSoulMessage("El instinto de caza se despierta...");
+
+        updateDashboard();
+        return `Modo de caza activado. ${yautjaSoul.preyDetected} presas detectadas en el área.\nUsa 'track' para rastrear presas o 'scan' para escanear el área.`;
+      }
+    },
+
+    track: {
+      description: "Rastrea una presa específica",
+      exec: () => {
+        if (!yautjaSoul.isHunting) return "No estás en modo de caza. Usa 'hunt' primero.";
+        if (yautjaSoul.preyDetected <= 0) return "No hay presas detectadas en el área.";
+
+        yautjaSoul.preyDetected--;
+        const preyTypes = ["Xenomorfo", "Humano Soldado", "Criatura Alienígena", "Androide Hostil"];
+        const prey = preyTypes[Math.floor(Math.random() * preyTypes.length)];
+
+        addSoulMessage(`Rastreando: ${prey}...`);
+
+        // Aumenta el instinto
+        yautjaSoul.instinct += 3;
+        updateDashboard();
+
+        return `Presa rastreada: ${prey}\nUsa 'engage' para enfrentarte o 'observe' para estudiar sus patrones.`;
+      }
+    },
+
+    engage: {
+      description: "Enfrenta a la presa rastreada",
+      exec: () => {
+        if (!yautjaSoul.isHunting) return "No hay una caza activa.";
+
+        const success = Math.random() > 0.3;
+
+        if (success) {
+          yautjaSoul.honor += 15;
+          yautjaSoul.trophies += 1;
+          yautjaSoul.rage += 5;
+          yautjaSoul.instinct += 2;
+
+          addSoulMessage("¡La presa ha sido derrotada! Honor ganado.");
+          updateDashboard();
+
+          return "¡Caza exitosa! Has derrotado a la presa y ganado honor.";
+        } else {
+          yautjaSoul.rage += 10;
+          yautjaSoul.instinct -= 2;
+
+          addSoulMessage("La presa escapó... la ira crece.");
+          updateDashboard();
+
+          return "La presa logró escapar. Tu ira aumenta.";
+        }
+      }
+    },
+
+    ritual: {
+      description: "Realiza un ritual ancestral",
+      exec: (args) => {
+        if (!args[0]) {
+          let ritualList = "Rituales disponibles:\n";
+          Object.keys(rituals).forEach(ritual => {
+            ritualList += `- ${ritual}: ${rituals[ritual].description}\n`;
+          });
+          return ritualList + "\nUsa 'ritual [nombre]' para realizar un ritual.";
+        }
+
+        const ritualName = args.join(' ');
+        const ritual = rituals[ritualName];
+
+        if (!ritual) return `Ritual '${ritualName}' no encontrado.`;
+
+        // Verificar costos
+        if (yautjaSoul.rage < ritual.cost.rage || 
+            yautjaSoul.honor < (ritual.cost.honor || 0) ||
+            yautjaSoul.wisdom < (ritual.cost.wisdom || 0) ||
+            yautjaSoul.instinct < (ritual.cost.instinct || 0)) {
+          return "No tienes los recursos necesarios para este ritual.";
+        }
+
+        // Aplicar costos
+        yautjaSoul.rage -= ritual.cost.rage || 0;
+        yautjaSoul.honor -= ritual.cost.honor || 0;
+        yautjaSoul.wisdom -= ritual.cost.wisdom || 0;
+        yautjaSoul.instinct -= ritual.cost.instinct || 0;
+
+        // Aplicar efectos
+        yautjaSoul.yujaHsaControl += ritual.effect.yujaHsaControl || 0;
+        yautjaSoul.ancestralConnection += ritual.effect.ancestralConnection || 0;
+        yautjaSoul.oopaPower += ritual.effect.oopaPower || 0;
+        yautjaSoul.wisdom += ritual.effect.wisdom || 0;
+        yautjaSoul.instinct += ritual.effect.instinct || 0;
+        yautjaSoul.rage += ritual.effect.rage || 0;
+        yautjaSoul.honor += ritual.effect.honor || 0;
+        yautjaSoul.clanInfluence += ritual.effect.clanInfluence || 0;
+
+        yautjaSoul.rituals++;
+        yautjaSoul.ritualActive = true;
+
+        addSoulMessage(ritual.message);
+        updateDashboard();
+
+        return `Ritual '${ritualName}' completado.\n${ritual.message}`;
+      }
+    },
+
+    galaxy: {
+      description: "Abre el mapa galáctico de caza",
+      exec: () => {
+        openGalaxyMap();
+        return null;
+      }
+    },
+
+    status: {
+      description: "Muestra el estado completo del alma Yautja",
+      exec: () => {
+        return `=== ALMA YAUTJA - ESTADO COMPLETO ===
+Nombre: ${yautjaSoul.name}
+Clan: ${yautjaSoul.clan}
+
+HONOR: ${yautjaSoul.honor}
+IRA ANCESTRAL: ${yautjaSoul.rage}
+SABIDURÍA: ${yautjaSoul.wisdom}
+INSTINTO DE CAZA: ${yautjaSoul.instinct}
+
+CONEXIÓN ANCESTRAL: ${yautjaSoul.ancestralConnection}%
+CONTROL YUJA-HSA: ${yautjaSoul.yujaHsaControl}%
+PODER OOPA: ${yautjaSoul.oopaPower}%
+
+NAVE: ${yautjaSoul.ship.name}
+- Camuflaje: ${yautjaSoul.ship.cloak}%
+- Motor: ${yautjaSoul.ship.engine}%
+- Sistemas: ${yautjaSoul.ship.systems}%
+
+CLAN:
+- Rango: ${yautjaSoul.clanRank}
+- Influencia: ${yautjaSoul.clanInfluence}
+- Respeto del Anciano: ${yautjaSoul.elderRespect}%
+
+PROGRESO:
+- Trofeos: ${yautjaSoul.trophies}
+- Rituales: ${yautjaSoul.rituals}
+- Presas detectadas: ${yautjaSoul.preyDetected}`;
+      }
+    },
+
+    memory: {
+      description: "Explora una memoria ancestral aleatoria",
+      exec: () => {
+        const memory = ancestralMemories[Math.floor(Math.random() * ancestralMemories.length)];
+        yautjaSoul.memories.push(memory);
+        yautjaSoul.ancestralConnection += 2;
+
+        addSoulMessage("Una memoria ancestral emerge...");
+        updateDashboard();
+
+        return `MEMORIA ANCESTRAL:\n"${memory}"`;
+      }
+    },
+
+    help: {
+      description: "Muestra todos los comandos disponibles",
+      exec: () => {
+        let cmds = Object.entries(commands).map(([cmd, info]) => `${cmd} - ${info.description}`).join('\n');
+        return `COMANDOS DEL NÚCLEO DEL ALMA:\n${cmds}\n\nCOMANDOS AVANZADOS:\n- soul: Accede al núcleo de tu alma\n- meditate: Conecta con voces ancestrales\n- ritual [nombre]: Realiza un ritual\n- galaxy: Abre el mapa galáctico\n- memory: Explora memorias ancestrales`;
+      }
+    },
+
+    clear: {
+      description: "Limpia la pantalla",
+      exec: () => {
+        output.textContent = '';
+        return null;
+      }
+    }
+  };
+
+  // ===== SISTEMA DE MODALES =====
+  function openSoulCore() {
+    const modal = document.getElementById('soul-core-modal');
+    const content = document.getElementById('soul-core-content');
+
+    let soulContent = `=== NÚCLEO DEL ALMA - ${yautjaSoul.name.toUpperCase()} ===\n\n`;
+    soulContent += `El Yuja-Hsa fluye a través de ti con ${yautjaSoul.yujaHsaControl}% de control.\n`;
+    soulContent += `Tu conexión con los ancestros es del ${yautjaSoul.ancestralConnection}%.\n`;
+    soulContent += `El poder del Oopa responde a tu voluntad en ${yautjaSoul.oopaPower}%.\n\n`;
+
+    soulContent += "VOCES ANCESTRALES RECIENTES:\n";
+    const recentVoices = ancestralVoices.slice(0, 3);
+    recentVoices.forEach(voice => {
+      soulContent += `- "${voice}"\n`;
+    });
+
+    soulContent += "\nMEMORIAS ACTIVAS:\n";
+    const recentMemories = yautjaSoul.memories.slice(-3);
+    if (recentMemories.length > 0) {
+      recentMemories.forEach(memory => {
+        soulContent += `- ${memory}\n`;
+      });
+    } else {
+      soulContent += "- Aún no hay memorias activas\n";
+    }
+
+    soulContent += "\nESTADOS ESPIRITUALES:\n";
+    soulContent += `- Meditación: ${yautjaSoul.isInTrance ? "ACTIVA" : "INACTIVA"}\n`;
+    soulContent += `- Caza: ${yautjaSoul.isHunting ? "ACTIVA" : "INACTIVA"}\n`;
+    soulContent += `- Ritual: ${yautjaSoul.ritualActive ? "ACTIVO" : "INACTIVO"}\n`;
+
+    content.textContent = soulContent;
+    modal.style.display = 'flex';
+  }
+
+  function openGalaxyMap() {
+    const modal = document.getElementById('galaxy-modal');
+    const galaxyView = document.getElementById('galaxy-view');
+
+    // Crear visualización simple de la galaxia
+    galaxyView.innerHTML = '';
+
+    Object.keys(huntingPlanets).forEach(planet => {
+      const planetInfo = huntingPlanets[planet];
+      const planetElement = document.createElement('div');
+      planetElement.className = 'planet';
+      planetElement.style.cssText = `
+        position: absolute;
+        left: ${Math.random() * 80 + 10}%;
+        top: ${Math.random() * 80 + 10}%;
+        width: 20px;
+        height: 20px;
+        background: ${planetInfo.difficulty === 'Extrema' ? '#f00' : 
+                     planetInfo.difficulty === 'Alta' ? '#ff0' : 
+                     planetInfo.difficulty === 'Media' ? '#0f0' : '#00f'};
+        border-radius: 50%;
+        cursor: pointer;
+      `;
+      planetElement.title = `${planet}: ${planetInfo.description}`;
+
+      planetElement.addEventListener('click', () => {
+        yautjaSoul.currentSector = planet;
+        updateDashboard();
+        output.textContent += `Navegando a ${planet}...\n`;
+        scrollToBottom();
+      });
+
+      galaxyView.appendChild(planetElement);
+
+      // Añadir etiqueta
+      const label = document.createElement('div');
+      label.textContent = planet;
+      label.style.cssText = `
+        position: absolute;
+        left: ${parseFloat(planetElement.style.left) + 25}px;
+        top: ${parseFloat(planetElement.style.top)}px;
+        color: var(--yautja-secondary);
+        font-size: 12px;
+      `;
+      galaxyView.appendChild(label);
+    });
+
+    modal.style.display = 'flex';
+  }
+
+  // Cerrar modales
+  document.getElementById('close-soul-core').addEventListener('click', () => {
+    document.getElementById('soul-core-modal').style.display = 'none';
+    showPrompt();
+  });
+
+  document.getElementById('close-galaxy').addEventListener('click', () => {
+    document.getElementById('galaxy-modal').style.display = 'none';
+    showPrompt();
+  });
+
+  document.getElementById('close-rituals').addEventListener('click', () => {
+    document.getElementById('rituals-modal').style.display = 'none';
+    showPrompt();
+  });
+
+  // ===== PROCESAMIENTO DE COMANDOS =====
+  async function processCommand(input) {
+    if (!input.trim()) return;
+
+    output.textContent += `YAUTJA-PRIME> ${input}\n`;
+
+    commandHistory.push(input);
+    historyIndex = commandHistory.length;
+
+    const [cmd, ...args] = input.trim().split(' ');
+    const command = commands[cmd.toLowerCase()];
+
+    if (command) {
+      commandInput.disabled = true;
+      commandInput.classList.remove('blink');
+
+      let result = command.exec(args);
+      if (result instanceof Promise) result = await result;
+
+      if (result !== null) {
+        output.textContent += result + '\n';
+      }
+
+      commandInput.disabled = false;
+      commandInput.classList.add('blink');
+      commandInput.focus();
+    } else {
+      output.textContent += `Comando no reconocido: ${cmd}. Escribe 'help' para ver comandos disponibles.\n`;
+    }
+
+    scrollToBottom();
+  }
+
+  // ===== MANEJO DE TECLADO =====
+  commandInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      processCommand(commandInput.value);
+      commandInput.value = '';
+    } else if (e.key === 'ArrowUp') {
+      if (commandHistory.length === 0) return;
+      if (historyIndex > 0) historyIndex--;
+      commandInput.value = commandHistory[historyIndex] || '';
+      e.preventDefault();
+    } else if (e.key === 'ArrowDown') {
+      if (commandHistory.length === 0) return;
+      if (historyIndex < commandHistory.length -1) {
+        historyIndex++;
+        commandInput.value = commandHistory[historyIndex];
+      } else {
+        historyIndex = commandHistory.length;
+        commandInput.value = '';
+      }
+      e.preventDefault();
+    }
+  });
+
+  function scrollToBottom() {
+    output.scrollTop = output.scrollHeight;
+  }
+
+  // ===== INICIALIZACIÓN DEL SISTEMA =====
+  async function bootSequence() {
+    output.textContent = '';
+    for (const msg of bootMessages) {
+      await typeText(msg);
+    }
+    await typeText(`Sistema del Alma Yautja completamente operativo.\nBienvenido, ${yautjaSoul.name} del Clan ${yautjaSoul.clan}.\n\nEl Yuja-Hsa fluye dentro de ti. El Oopa te guiará.\nEscribe 'help' para comenzar tu journey.`);
+
+    // Mensaje inicial del alma
+    setTimeout(() => {
+      addSoulMessage("El núcleo del alma se activa...");
+      addSoulMessage("Los ancestros observan...");
+    }, 1000);
+
+    showPrompt();
+    initParticles();
+  }
+
+  // Iniciar todo
+  bootSequence();
+</script>
+</body>
+</html>
